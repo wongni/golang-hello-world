@@ -1,18 +1,16 @@
 sudo: required
 env: 
-  # - KEY_FILE_NAME=deploy_rsa
-  # - DEPLOY_TARGET=travis-ci@10.61.244.110:/home/travis-ci
-  - KEY_FILE_NAME=MyKP.pem
-  - DEPLOY_TARGET=ec2-user@54.172.64.227:/home/ec2-user
+  # - KEY_FILE_NAME=deploy_rsa DEPLOY_TARGET=travis-ci@10.61.244.110:/home/travis-ci
+  - KEY_FILE_NAME=MyKP.pem DEPLOY_TARGET=ec2-user@54.172.64.227:/home/ec2-user
 
 services:
   - docker
 
 script:
-  - docker run -v .:/app golang make test
+  - docker run -v $PWD:/app golang make test
 
 after_success:
-  - docker run -v .:/app golang make
+  - docker run -v $PWD:/app golang make
 
 addons:
   ssh_known_hosts: 

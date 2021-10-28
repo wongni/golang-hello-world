@@ -1,20 +1,32 @@
 sudo: required
+env: 
+  # - KEY_FILE_NAME=deploy_rsa
+  # - DEPLOY_TARGET=travis-ci@10.61.244.110:/home/travis-ci
+  - KEY_FILE_NAME=MyKP.pem
+  - DEPLOY_TARGET=ec2-user@54.172.64.227:/home/ec2-user
+
 services:
   - docker
+
 script:
-  - docker run -v .:/app wongni/golang-k8s-testenv make test
+  - docker run -v .:/app golang make test
+
 after_success:
-  - docker run -v .:/app wongni/golang-k8s-testenv make
-before_install:
-  - openssl aes-256-cbc -K $encrypted_db2095f63ba3_key -iv $encrypted_db2095f63ba3_iv -in deploy_rsa.enc -out deploy_rsa -d
+  - docker run -v .:/app golang make
+
+addons:
+  ssh_known_hosts: 
+
+before_deploy:
+  # - openssl aes-256-cbc -K $encrypted_db2095f63ba3_key -iv $encrypted_db2095f63ba3_iv -in $KEY_FILE_NAME.enc -out /tmp/$KEY_FILE_NAME -d
+  - openssl aes-256-cbc -K $encrypted_3e6a2f2f29a1_key -iv $encrypted_3e6a2f2f29a1_iv -in $KEY_FILE_NAME.enc -out /tmp/$KEY_FILE_NAME -d
+  - eval "$(ssh-agent -s)"
+  - chmod 600 /tmp/$KEY_FILE_NAME
+  - ssh-add /tmp/$KEY_FILE_NAME
+
 deploy:
-  provider: elasticbeanstalk
-  region: us-east-1
-  app: multi-docker
-  env: Multidocker-env
-  bucket_name: elasticbeanstalk-us-east-1-603244702495
-  bucket_path: docker-multi
+  provider: script
+  skip_cleanup: true
+  script: rsync -r --delete-after --quiet bin/hello $DEPLOY_TARGET
   on:
     branch: master
-  access_key_id: "$AWS_ACCESS_KEY"
-  secret_access_key: "$AWS_SECRET_KEY"

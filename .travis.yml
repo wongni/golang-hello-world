@@ -7,10 +7,10 @@ services:
   - docker
 
 script:
-  - docker run -v $PWD:/app golang make test
+  - docker run -v $TRAVIS_BUILD_DIR:/app golang make test
 
 after_success:
-  - docker run -v $PWD:/app golang make
+  - docker run -v $TRAVIS_BUILD_DIR:/app golang make
 
 addons:
   ssh_known_hosts: 
